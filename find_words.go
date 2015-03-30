@@ -1,14 +1,12 @@
 package bench
 
 import (
-	"os"
 	"bufio"
-	"strings"
-	"fmt"
 	"errors"
+	"fmt"
+	"os"
+	"strings"
 )
-
-
 
 func Find(path, s string) (string, error) {
 	if s == "" {
@@ -29,7 +27,6 @@ func Find(path, s string) (string, error) {
 	return strings.Join(result, ","), nil
 }
 
-
 func findInLine(s, line string, lineNum int) []string {
 	var result []string
 
@@ -37,7 +34,7 @@ func findInLine(s, line string, lineNum int) []string {
 
 	for col := 0; col < len(line); col++ {
 		if matchAtOffset(s, line, col) {
-		    result = append(result, fmt.Sprintf("%d:%d", row, col))
+			result = append(result, fmt.Sprintf("%d:%d", row, col))
 		}
 	}
 
@@ -47,19 +44,18 @@ func findInLine(s, line string, lineNum int) []string {
 // return true if the pattern s exists in line at the given offset
 func matchAtOffset(s, line string, offset int) bool {
 	// past the end
-	if offset + len(s) > len(line) {
+	if offset+len(s) > len(line) {
 		return false
 	}
 
-	for i:= 0; i < len(s); i++ {
-		if s[i] != line[offset + i] {
+	for i := 0; i < len(s); i++ {
+		if s[i] != line[offset+i] {
 			return false
 		}
 	}
 
 	return true
 }
-
 
 // read the file at path and return as array of lines
 func readLines(path string) ([]string, error) {

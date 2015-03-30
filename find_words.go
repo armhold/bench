@@ -10,17 +10,15 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	_ "time"
-	"sync"
 	"runtime"
+	"sync"
+	_ "time"
 )
 
 type Job struct {
-	Line string  // the line of text to search
-	RowIndex int // the (zero-based) index into the matchesByLine array where the job should write the result
+	Line     string // the line of text to search
+	RowIndex int    // the (zero-based) index into the matchesByLine array where the job should write the result
 }
-
-
 
 func Find(path, s string) (string, error) {
 	if s == "" {
@@ -36,7 +34,6 @@ func Find(path, s string) (string, error) {
 
 	var matchesByLine [][]int
 	matchesByLine = make([][]int, len(lines))
-
 
 	jobs := make(chan *Job)
 	var wg sync.WaitGroup
@@ -57,17 +54,16 @@ func Find(path, s string) (string, error) {
 
 	// join the matches together into a comma-separated string
 	result := ""
-	sep    := ""
+	sep := ""
 	for row, matches := range matchesByLine {
 		for _, col := range matches {
-			result = result + fmt.Sprintf("%s%d:%d", sep, row + 1, col)
+			result = result + fmt.Sprintf("%s%d:%d", sep, row+1, col)
 			sep = ","
 		}
 	}
 
 	return result, nil
 }
-
 
 // accept jobs until the channel is closed, writing results directly into the matchesByLine array
 func runWorker(workerId int, wg *sync.WaitGroup, matchesByLine [][]int, T []int, s string, jobs chan *Job) {
@@ -76,15 +72,12 @@ func runWorker(workerId int, wg *sync.WaitGroup, matchesByLine [][]int, T []int,
 	for job := range jobs {
 		fmt.Println("worker %d starting line: %s", workerId, job.Line)
 
-//		time.Sleep(1 * time.Second)
+		//		time.Sleep(1 * time.Second)
 		matchesByLine[job.RowIndex] = kmpSearch(T, s, job.Line)
 
 		fmt.Println("worker %d completed line: %s", workerId, job.Line)
 	}
 }
-
-
-
 
 // Knuth-Morris-Pratt algorithm, modified slightly to return all occurrences
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
@@ -94,9 +87,9 @@ func kmpSearch(T []int, word, line string) []int {
 	m := 0
 	i := 0
 
-	for ; m + i < len(line); {
-		if word[i] == line[m + i] {
-			if i == len(word) - 1 {
+	for m+i < len(line) {
+		if word[i] == line[m+i] {
+			if i == len(word)-1 {
 				// got a match
 				result = append(result, m)
 				m = m + i
@@ -119,7 +112,6 @@ func kmpSearch(T []int, word, line string) []int {
 	return result
 }
 
-
 // builds the table "T" for Knuth-Morris-Pratt string search
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
 func kmpBuildTable(word string) []int {
@@ -131,7 +123,7 @@ func kmpBuildTable(word string) []int {
 	T[0] = -1
 	T[1] = 0
 
-	for ; pos < len(word); {
+	for pos < len(word) {
 		if word[pos-1] == word[cnd] {
 			cnd++
 			T[pos] = cnd
@@ -146,7 +138,6 @@ func kmpBuildTable(word string) []int {
 
 	return T
 }
-
 
 // read the file at path and return as array of lines
 func readLines(path string) ([]string, error) {

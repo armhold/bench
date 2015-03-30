@@ -62,10 +62,30 @@ func matchAtOffset(s, line string, offset int) bool {
 }
 
 // builds the table "T" for Knuth-Morris-Pratt string search
-func kmpBuildTable(s string) []int {
-	t := make([]int, len(s))
+// via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
+func kmpBuildTable(W string) []int {
+	T := make([]int, len(W))
 
-	return t
+	pos := 2
+	cnd := 0
+
+	T[0] = -1
+	T[1] = 0
+
+	for ; pos < len(W); {
+		if W[pos-1] == W[cnd] {
+			cnd++
+			T[pos] = cnd
+			pos++
+		} else if cnd > 0 {
+			cnd = T[cnd]
+		} else {
+			T[pos] = 0
+			pos++
+		}
+	}
+
+	return T
 }
 
 

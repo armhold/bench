@@ -37,7 +37,25 @@ func TestFind_emptyResult(t *testing.T) {
 	}
 }
 
-func Test_kmpBuildTable(t *testing.T) {
+func Test_kmpBuildTable_ABCDABD(t *testing.T) {
+	W := "ABCDABD"
+	T := kmpBuildTable(W)
+
+	expected := []int{-1, 0, 0, 0, 0, 1, 2}
+
+	if len(expected) != len(T) {
+		t.Errorf("kmpBuildTable(%q) => %q, want %q", W, T, expected)
+	}
+
+	for i, v := range T {
+		if v != expected[i] {
+			t.Errorf("kmpBuildTable(%q) => %v, want %v", W, T, expected)
+			break
+		}
+	}
+}
+
+func Test_kmpBuildTable_PARTICIPATE(t *testing.T) {
 	W := "PARTICIPATE IN PARACHUTE"
 	T := kmpBuildTable(W)
 

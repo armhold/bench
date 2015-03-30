@@ -1,14 +1,15 @@
 package bench
 
-// my "naive" entry for the gobench "Find words" competition:
+// my entry for the gobench "Find words" competition:
 // https://github.com/gobench/competitions/tree/master/00000001
+//
+// George Armhold, March 2015
 
 import (
 	"bufio"
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 )
 
 func Find(path, s string) (string, error) {
@@ -23,21 +24,31 @@ func Find(path, s string) (string, error) {
 
 	T := kmpBuildTable(s)
 
-	var result []string
+	var matchesByLine [][]int
+	matchesByLine = make([][]int, len(lines))
 
-	for i, line := range lines {
-		result = append(result, kmpSearch(T, s, line, i)...)
+	// find the matches as int offsets in each line
+	for row, line := range lines {
+		matchesByLine[row] = kmpSearch(T, s, line)
 	}
 
-	return strings.Join(result, ","), nil
+	// join the matches together into a comma-separated string
+	result := ""
+	sep    := ""
+	for row, matches := range matchesByLine {
+		for _, col := range matches {
+			result = result + fmt.Sprintf("%s%d:%d", sep, row + 1, col)
+			sep = ","
+		}
+	}
+
+	return result, nil
 }
 
 // Knuth-Morris-Pratt algorithm, modified slightly to return all occurrences
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
-func kmpSearch(T []int, word, line string, lineNum int) []string {
-	var result []string
-
-	row := lineNum + 1
+func kmpSearch(T []int, word, line string) []int {
+	var result []int
 
 	m := 0
 	i := 0
@@ -45,7 +56,8 @@ func kmpSearch(T []int, word, line string, lineNum int) []string {
 	for ; m + i < len(line); {
 		if word[i] == line[m + i] {
 			if i == len(word) - 1 {
-				result = append(result, fmt.Sprintf("%d:%d", row, m))
+				// got a match
+				result = append(result, m)
 				m = m + i
 				i = 0
 			} else {

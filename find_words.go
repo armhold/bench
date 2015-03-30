@@ -70,12 +70,12 @@ func runWorker(workerId int, wg *sync.WaitGroup, matchesByLine [][]int, T []int,
 	defer wg.Done()
 
 	for job := range jobs {
-		fmt.Println("worker %d starting line: %s", workerId, job.Line)
+		fmt.Printf("worker %d starting line: %s\n", workerId, job.Line)
 
 		//		time.Sleep(1 * time.Second)
 		matchesByLine[job.RowIndex] = kmpSearch(T, s, job.Line)
 
-		fmt.Println("worker %d completed line: %s", workerId, job.Line)
+		fmt.Printf("worker %d completed line: %s\n", workerId, job.Line)
 	}
 }
 

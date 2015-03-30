@@ -1,5 +1,7 @@
 package bench
 
+// my "naive" entry for the gobench "Find words" competition
+
 import (
 	"bufio"
 	"errors"

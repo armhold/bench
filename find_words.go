@@ -61,6 +61,17 @@ func matchAtOffset(s, line string, offset int) bool {
 	return true
 }
 
+// builds the table "T" for Knuth-Morris-Pratt string search
+func kmpBuildTable(s string) []int {
+	t := make([]int, len(s))
+
+	return t
+}
+
+
+
+
+
 // read the file at path and return as array of lines
 func readLines(path string) ([]string, error) {
 	file, err := os.Open(path)

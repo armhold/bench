@@ -69,6 +69,7 @@ func Find(path, s string) (string, error) {
 }
 
 
+// accept jobs until the channel is closed, writing results directly into the matchesByLine array
 func runWorker(workerId int, wg *sync.WaitGroup, matchesByLine [][]int, T []int, s string, jobs chan *Job) {
 	defer wg.Done()
 

@@ -21,13 +21,14 @@ func Find(path, s string) (string, error) {
 	var result []string
 
 	for i, line := range lines {
-		result = append(result, findInLine(s, line, i)...)
+		result = append(result, naiveFindInLine(s, line, i)...)
 	}
 
 	return strings.Join(result, ","), nil
 }
 
-func findInLine(s, line string, lineNum int) []string {
+// naive version that just iterates the string with no backtrack-prevention
+func naiveFindInLine(s, line string, lineNum int) []string {
 	var result []string
 
 	row := lineNum + 1

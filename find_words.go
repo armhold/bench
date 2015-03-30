@@ -1,6 +1,7 @@
 package bench
 
-// my "naive" entry for the gobench "Find words" competition
+// my "naive" entry for the gobench "Find words" competition:
+// https://github.com/gobench/competitions/tree/master/00000001
 
 import (
 	"bufio"

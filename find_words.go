@@ -10,7 +10,17 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	_ "time"
+	"sync"
+	"runtime"
 )
+
+type Job struct {
+	Line string  // the line of text to search
+	RowIndex int // the (zero-based) index into the matchesByLine array where the job should write the result
+}
+
+
 
 func Find(path, s string) (string, error) {
 	if s == "" {
@@ -27,10 +37,23 @@ func Find(path, s string) (string, error) {
 	var matchesByLine [][]int
 	matchesByLine = make([][]int, len(lines))
 
+
+	jobs := make(chan *Job)
+	var wg sync.WaitGroup
+
+	for i := 0; i < runtime.NumCPU(); i++ {
+		wg.Add(1)
+		go runWorker(i, &wg, matchesByLine, T, s, jobs)
+	}
+
 	// find the matches as int offsets in each line
 	for row, line := range lines {
-		matchesByLine[row] = kmpSearch(T, s, line)
+		jobs <- &Job{Line: line, RowIndex: row}
 	}
+	close(jobs)
+	wg.Wait()
+
+	fmt.Printf("all jobs complete, stitching results")
 
 	// join the matches together into a comma-separated string
 	result := ""
@@ -44,6 +67,23 @@ func Find(path, s string) (string, error) {
 
 	return result, nil
 }
+
+
+func runWorker(workerId int, wg *sync.WaitGroup, matchesByLine [][]int, T []int, s string, jobs chan *Job) {
+	defer wg.Done()
+
+	for job := range jobs {
+		fmt.Println("worker %d starting line: %s", workerId, job.Line)
+
+//		time.Sleep(1 * time.Second)
+		matchesByLine[job.RowIndex] = kmpSearch(T, s, job.Line)
+
+		fmt.Println("worker %d completed line: %s", workerId, job.Line)
+	}
+}
+
+
+
 
 // Knuth-Morris-Pratt algorithm, modified slightly to return all occurrences
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm

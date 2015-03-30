@@ -10,7 +10,8 @@ func main() {
 	result, err := bench.Find("assets/data.txt", "aa")
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	fmt.Printf("result: %s\n", result)

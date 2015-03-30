@@ -5,11 +5,15 @@ import (
 	"bufio"
 	"strings"
 	"fmt"
+	"errors"
 )
 
 
 
 func Find(path, s string) (string, error) {
+	if s == "" {
+		return "", errors.New("s cannot be empty")
+	}
 
 	lines, err := readLines(path)
 	if err != nil {
@@ -20,9 +24,7 @@ func Find(path, s string) (string, error) {
 
 	for i, line := range lines {
 		result = append(result, findInLine(s, line, i)...)
-//		fmt.Printf("read line %s\n", line)
 	}
-
 
 	return strings.Join(result, ","), nil
 }
@@ -42,8 +44,8 @@ func findInLine(s, line string, lineNum int) []string {
 	return result
 }
 
+// return true if the pattern s exists in line at the given offset
 func matchAtOffset(s, line string, offset int) bool {
-
 	// past the end
 	if offset + len(s) > len(line) {
 		return false
@@ -59,10 +61,7 @@ func matchAtOffset(s, line string, offset int) bool {
 }
 
 
-
-
-// readLines reads a whole file into memory
-// and returns a slice of its lines.
+// read the file at path and return as array of lines
 func readLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -70,10 +69,10 @@ func readLines(path string) ([]string, error) {
 	}
 	defer file.Close()
 
-	var lines []string
+	var result []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		result = append(result, scanner.Text())
 	}
-	return lines, scanner.Err()
+	return result, scanner.Err()
 }

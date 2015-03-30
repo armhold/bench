@@ -21,50 +21,56 @@ func Find(path, s string) (string, error) {
 		return "", err
 	}
 
+	T := kmpBuildTable(s)
+
 	var result []string
 
 	for i, line := range lines {
-		result = append(result, naiveFindInLine(s, line, i)...)
+		result = append(result, kmpSearch(T, s, line, i)...)
 	}
 
 	return strings.Join(result, ","), nil
 }
 
-// naive version that just iterates the string with no backtrack-prevention
-func naiveFindInLine(s, line string, lineNum int) []string {
+// Knuth-Morris-Pratt algorithm, modified slightly to return all occurrences
+// via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
+func kmpSearch(T []int, word, line string, lineNum int) []string {
 	var result []string
 
 	row := lineNum + 1
 
-	for col := 0; col < len(line); col++ {
-		if matchAtOffset(s, line, col) {
-			result = append(result, fmt.Sprintf("%d:%d", row, col))
+	m := 0
+	i := 0
+
+	for ; m + i < len(line); {
+		if word[i] == line[m + i] {
+			if i == len(word) - 1 {
+				result = append(result, fmt.Sprintf("%d:%d", row, m))
+				m = m + i
+				i = 0
+			} else {
+				i++
+			}
+
+		} else {
+			if T[i] > -1 {
+				m = m + i - T[i]
+				i = T[i]
+			} else {
+				i = 0
+				m++
+			}
 		}
 	}
 
 	return result
 }
 
-// return true if the pattern s exists in line at the given offset
-func matchAtOffset(s, line string, offset int) bool {
-	// past the end
-	if offset+len(s) > len(line) {
-		return false
-	}
-
-	for i := 0; i < len(s); i++ {
-		if s[i] != line[offset+i] {
-			return false
-		}
-	}
-
-	return true
-}
 
 // builds the table "T" for Knuth-Morris-Pratt string search
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
-func kmpBuildTable(W string) []int {
-	T := make([]int, len(W))
+func kmpBuildTable(word string) []int {
+	T := make([]int, len(word))
 
 	pos := 2
 	cnd := 0
@@ -72,8 +78,8 @@ func kmpBuildTable(W string) []int {
 	T[0] = -1
 	T[1] = 0
 
-	for ; pos < len(W); {
-		if W[pos-1] == W[cnd] {
+	for ; pos < len(word); {
+		if word[pos-1] == word[cnd] {
 			cnd++
 			T[pos] = cnd
 			pos++
@@ -87,9 +93,6 @@ func kmpBuildTable(W string) []int {
 
 	return T
 }
-
-
-
 
 
 // read the file at path and return as array of lines

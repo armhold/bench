@@ -3,6 +3,8 @@ package bench
 // my entry for the gobench "Find words" competition:
 // https://github.com/gobench/competitions/tree/master/00000001
 //
+// benchmark with:  $ go test -bench . -benchmem
+//
 // George Armhold, March 2015
 
 import (
@@ -14,6 +16,11 @@ import (
 	"sync"
 	_ "time"
 )
+
+
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
 
 type Job struct {
 	Line     string // the line of text to search
@@ -46,6 +53,7 @@ func Find(path, s string) (string, error) {
 	// find the matches as int offsets in each line
 	for row, line := range lines {
 		jobs <- &Job{Line: line, RowIndex: row}
+//		matchesByLine[row] = kmpSearch(T, s, line)
 	}
 	close(jobs)
 	wg.Wait()

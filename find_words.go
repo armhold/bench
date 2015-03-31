@@ -50,7 +50,7 @@ func Find(path, s string) (string, error) {
 	close(jobs)
 	wg.Wait()
 
-	fmt.Printf("all jobs complete, stitching results")
+//	fmt.Printf("all jobs complete, stitching results")
 
 	// join the matches together into a comma-separated string
 	result := ""
@@ -70,12 +70,12 @@ func runWorker(workerId int, wg *sync.WaitGroup, matchesByLine [][]int, T []int,
 	defer wg.Done()
 
 	for job := range jobs {
-		fmt.Printf("worker %d starting line: %s\n", workerId, job.Line)
+//		fmt.Printf("worker %d starting line: %s\n", workerId, job.Line)
 
 		//		time.Sleep(1 * time.Second)
 		matchesByLine[job.RowIndex] = kmpSearch(T, s, job.Line)
 
-		fmt.Printf("worker %d completed line: %s\n", workerId, job.Line)
+//		fmt.Printf("worker %d completed line: %s\n", workerId, job.Line)
 	}
 }
 

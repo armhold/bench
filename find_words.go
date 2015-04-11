@@ -31,23 +31,23 @@ func Find(path, s string) (string, error) {
 	var matchesByLine [][]int
 
 	searchResultBuffer := make([]int, 0, 5000000)
+	result := ""
+	sep := ""
+	row := 1
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineMatchCount := kmpSearch(T, sBytes, line, searchResultBuffer)
-		fmt.Printf("got lineMatchCount: %d\n", lineMatchCount)
-		matchesByLine = append(matchesByLine, searchResultBuffer[0:lineMatchCount])
-	}
+		matches := searchResultBuffer[0:lineMatchCount]
 
-	// join the matches together into a comma-separated string
-	result := ""
-	sep := ""
-	for row, matches := range matchesByLine {
 		for _, col := range matches {
-			result = result + fmt.Sprintf("%s%d:%d", sep, row+1, col)
+			result = result + fmt.Sprintf("%s%d:%d", sep, row, col)
 			sep = ","
 		}
+
+		matchesByLine = append(matchesByLine, matches)
+		row++
 	}
 
 	return result, nil

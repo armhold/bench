@@ -89,6 +89,6 @@ func Test_kmpBuildTable_PARTICIPATE(t *testing.T) {
 
 func BenchmarkFind(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Find(path, word)
+		Find(pathLarge, word)
 	}
 }

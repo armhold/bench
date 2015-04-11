@@ -14,11 +14,6 @@ import (
 	"os"
 )
 
-type Job struct {
-	Line     string // the line of text to search
-	RowIndex int    // the (zero-based) index into the matchesByLine array where the job should write the result
-}
-
 func Find(path, s string) (string, error) {
 	if s == "" {
 		return "", errors.New("s cannot be empty")
@@ -41,6 +36,7 @@ func Find(path, s string) (string, error) {
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineMatchCount := kmpSearch(T, sBytes, line, searchResultBuffer)
+		fmt.Printf("got lineMatchCount: %d\n", lineMatchCount)
 		matchesByLine = append(matchesByLine, searchResultBuffer[0:lineMatchCount])
 	}
 

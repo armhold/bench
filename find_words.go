@@ -28,7 +28,7 @@ func Find(path, s string) (string, error) {
 	}
 	defer file.Close()
 
-//	searchResultBuffer := make([]int, 0, 5000000)
+//	searchResultBuffer := make([]int, 0, 1000)
 	var searchResultBuffer []int
 	result := ""
 	sep := ""
@@ -37,7 +37,7 @@ func Find(path, s string) (string, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		kmpSearch(T, sBytes, line, &searchResultBuffer)
+		searchResultBuffer = kmpSearch(T, sBytes, line, searchResultBuffer)
 
 		for _, col := range searchResultBuffer {
 			result = result + fmt.Sprintf("%s%d:%d", sep, row, col)
@@ -52,21 +52,20 @@ func Find(path, s string) (string, error) {
 
 // Knuth-Morris-Pratt algorithm, modified slightly to return all occurrences
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
-func kmpSearch(T []int, word, line []byte, result *[]int) {
+func kmpSearch(T []int, word, line []byte, result []int) []int {
 	m := 0
 	i := 0
 
 	matchCount := 0
 
 	// "empty" the initial result by setting its length to zero
-	slice := *result
-	*result = slice[0:0]
+	result = result[0:0]
 
 	for m+i < len(line) {
 		if word[i] == line[m+i] {
 			if i == len(word)-1 {
 				// got a match
-				*result = append(*result, m)
+				result = append(result, m)
 				matchCount++
 				m = m + i
 				i = 0
@@ -84,6 +83,9 @@ func kmpSearch(T []int, word, line []byte, result *[]int) {
 			}
 		}
 	}
+
+	// return a new slice (with updated length) which points to data that we have modified in-place
+	return result
 }
 
 // builds the table "T" for Knuth-Morris-Pratt string search

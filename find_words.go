@@ -35,12 +35,13 @@ func Find(path, s string) (string, error) {
 
 	var matchesByLine [][]int
 
+	searchResultBuffer := make([]int, 0, 5000000)
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		matches := kmpSearch(T, sBytes, line)
-		matchesByLine = append(matchesByLine, matches)
-
+		lineMatchCount := kmpSearch(T, sBytes, line, searchResultBuffer)
+		matchesByLine = append(matchesByLine, searchResultBuffer[0:lineMatchCount])
 	}
 
 	// join the matches together into a comma-separated string
@@ -58,17 +59,18 @@ func Find(path, s string) (string, error) {
 
 // Knuth-Morris-Pratt algorithm, modified slightly to return all occurrences
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
-func kmpSearch(T []int, word, line []byte) []int {
-	result := make([]int, 0, 0)
-
+func kmpSearch(T []int, word, line []byte, result []int) int {
 	m := 0
 	i := 0
+
+	matchCount := 0
 
 	for m+i < len(line) {
 		if word[i] == line[m+i] {
 			if i == len(word)-1 {
 				// got a match
 				result = append(result, m)
+				matchCount++
 				m = m + i
 				i = 0
 			} else {
@@ -86,7 +88,7 @@ func kmpSearch(T []int, word, line []byte) []int {
 		}
 	}
 
-	return result
+	return matchCount
 }
 
 // builds the table "T" for Knuth-Morris-Pratt string search

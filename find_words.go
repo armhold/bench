@@ -12,15 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"runtime"
-	"sync"
-	_ "time"
 )
-
-
-func init() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-}
 
 type Job struct {
 	Line     string // the line of text to search
@@ -32,33 +24,24 @@ func Find(path, s string) (string, error) {
 		return "", errors.New("s cannot be empty")
 	}
 
-	lines, err := readLines(path)
+	T := kmpBuildTable(s)
+	sBytes := []byte(s)
+
+	file, err := os.Open(path)
 	if err != nil {
 		return "", err
 	}
-
-	T := kmpBuildTable(s)
+	defer file.Close()
 
 	var matchesByLine [][]int
-	matchesByLine = make([][]int, len(lines))
 
-	jobs := make(chan *Job)
-	var wg sync.WaitGroup
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		matches := kmpSearch(T, sBytes, line)
+		matchesByLine = append(matchesByLine, matches)
 
-	for i := 0; i < runtime.NumCPU(); i++ {
-		wg.Add(1)
-		go runWorker(i, &wg, matchesByLine, T, s, jobs)
 	}
-
-	// find the matches as int offsets in each line
-	for row, line := range lines {
-		jobs <- &Job{Line: line, RowIndex: row}
-//		matchesByLine[row] = kmpSearch(T, s, line)
-	}
-	close(jobs)
-	wg.Wait()
-
-//	fmt.Printf("all jobs complete, stitching results")
 
 	// join the matches together into a comma-separated string
 	result := ""
@@ -73,24 +56,10 @@ func Find(path, s string) (string, error) {
 	return result, nil
 }
 
-// accept jobs until the channel is closed, writing results directly into the matchesByLine array
-func runWorker(workerId int, wg *sync.WaitGroup, matchesByLine [][]int, T []int, s string, jobs chan *Job) {
-	defer wg.Done()
-
-	for job := range jobs {
-//		fmt.Printf("worker %d starting line: %s\n", workerId, job.Line)
-
-		//		time.Sleep(1 * time.Second)
-		matchesByLine[job.RowIndex] = kmpSearch(T, s, job.Line)
-
-//		fmt.Printf("worker %d completed line: %s\n", workerId, job.Line)
-	}
-}
-
 // Knuth-Morris-Pratt algorithm, modified slightly to return all occurrences
 // via: http://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
-func kmpSearch(T []int, word, line string) []int {
-	var result []int
+func kmpSearch(T []int, word, line []byte) []int {
+	result := make([]int, 0, 0)
 
 	m := 0
 	i := 0
@@ -145,20 +114,4 @@ func kmpBuildTable(word string) []int {
 	}
 
 	return T
-}
-
-// read the file at path and return as array of lines
-func readLines(path string) ([]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var result []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		result = append(result, scanner.Text())
-	}
-	return result, scanner.Err()
 }
